@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>İzlenebilirlik Sistemi — İnsitu Yeşil Teknolojiler</title>
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <strong>İzlenebilirlik Sistemi</strong>
+    <span>İnsitu Yeşil Teknolojiler A.Ş. — Tarladan Hastaya Kapalı Zincir</span>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-view="panel"    aria-current="page">Panel</button>
+    <button data-view="ciftci">Çiftçi</button>
+    <button data-view="hammadde">Ham Madde</button>
+    <button data-view="uretim">Üretim Serisi</button>
+    <button data-view="ambalaj">Ambalaj &amp; Karekod</button>
+    <button data-view="sevkiyat">Sevkiyat</button>
+    <button data-view="eczane">Eczane Satışı</button>
+    <button data-view="izle">İzleme Sorgusu</button>
+    <button data-view="gericekme">Geri Çekme</button>
+    <button data-view="buts">BÜTS</button>
+    <button data-view="ayar">Kayıtlar</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============================ PANEL ============================ -->
+<section class="view active" id="v-panel">
+  <div class="grid c4" style="margin-bottom:18px">
+    <div class="kpi"><div class="v" id="k-ciftci">0</div><div class="l">Kayıtlı Çiftçi</div></div>
+    <div class="kpi"><div class="v" id="k-hm">0</div><div class="l">Ham Madde Lotu</div></div>
+    <div class="kpi"><div class="v" id="k-seri">0</div><div class="l">Üretim Serisi</div></div>
+    <div class="kpi"><div class="v" id="k-paket">0</div><div class="l">Ambalaj Birimi</div></div>
+    <div class="kpi"><div class="v" id="k-sevk">0</div><div class="l">Sevk Edilen</div></div>
+    <div class="kpi"><div class="v" id="k-satis">0</div><div class="l">Hastaya Satış</div></div>
+    <div class="kpi"><div class="v" id="k-karantina">0</div><div class="l">Karantinada</div></div>
+    <div class="kpi"><div class="v" id="k-buts">0</div><div class="l">Bekleyen BÜTS</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Zincir Durumu</h2>
+    <p class="hint">Ek-13 üretim akış şemasına göre her halkadaki güncel kayıt sayısı.</p>
+    <div id="zincir-ozet"></div>
+  </div>
+
+  <div class="card">
+    <h2>Son Hareketler</h2>
+    <p class="hint">Denetim izi (audit trail) — kim, ne zaman, ne yaptı. Silinemez.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Zaman</th><th>Kullanıcı</th><th>İşlem</th><th>Kayıt</th></tr></thead>
+      <tbody id="t-log"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================ ÇİFTÇİ ============================ -->
+<section class="view" id="v-ciftci">
+  <div class="card">
+    <h2>Çiftçi / Ham Madde Tedarikçisi Kaydı</h2>
+    <p class="hint">Zincirin başlangıç halkası. SOP-KG-08 tedarikçi değerlendirme kapsamında kayıt açılır.</p>
+    <form id="f-ciftci">
+      <div class="grid c3">
+        <label class="field"><span>Ad Soyad / Ünvan *</span><input name="ad" required placeholder="Örn. Ahmet Yılmaz"></label>
+        <label class="field"><span>TC / Vergi No *</span><input name="tcVkn" required placeholder="11 veya 10 hane"></label>
+        <label class="field"><span>ÇKS Kayıt No</span><input name="cksNo" placeholder="Çiftçi Kayıt Sistemi no"></label>
+        <label class="field"><span>Kenevir Ekim İzin No *</span><input name="izinNo" required placeholder="İl Tarım Müdürlüğü izin no"></label>
+        <label class="field"><span>İl *</span><input name="il" required placeholder="Burdur"></label>
+        <label class="field"><span>İlçe</span><input name="ilce" placeholder="Gölhisar"></label>
+        <label class="field"><span>Parsel / Ada No</span><input name="parsel" placeholder="Ada/Parsel"></label>
+        <label class="field"><span>Ekim Alanı (dekar)</span><input name="alan" type="number" step="0.1" min="0"></label>
+        <label class="field"><span>Telefon</span><input name="tel" placeholder="05xx..."></label>
+      </div>
+      <div class="row end mt"><button class="btn" type="submit">Çiftçi Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Kayıtlı Çiftçiler</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kod</th><th>Ad / Ünvan</th><th>İzin No</th><th>Konum</th><th>Parsel</th><th>Teslimat</th><th>Toplam kg</th></tr></thead>
+      <tbody id="t-ciftci"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================ HAM MADDE ============================ -->
+<section class="view" id="v-hammadde">
+  <div class="card">
+    <h2>Ham Madde Kabulü ve Karantina</h2>
+    <p class="hint">Ek-13 Adım 1 — SOP-KK-02 · SOP-ÜR-18. Kabul edilen her teslimat otomatik <b>KARANTİNA</b> statüsüyle açılır.</p>
+    <form id="f-hm">
+      <div class="grid c3">
+        <label class="field"><span>Çiftçi *</span><select name="ciftciId" required id="sel-ciftci"></select></label>
+        <label class="field"><span>Teslim Tarihi *</span><input name="teslimTarihi" type="date" required></label>
+        <label class="field"><span>Miktar (kg) *</span><input name="miktarKg" type="number" step="0.1" min="0.1" required></label>
+        <label class="field"><span>Hasat Yılı</span><input name="hasatYili" type="number" min="2020" max="2100" placeholder="2026"></label>
+        <label class="field"><span>Nem (%)</span><input name="nem" type="number" step="0.1" min="0" max="100" placeholder="≤ 10"></label>
+        <label class="field"><span>İrsaliye No</span><input name="irsaliye"></label>
+      </div>
+      <div class="row end mt"><button class="btn" type="submit">Kabul Et ve Karantinaya Al</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Akredite Laboratuvar Analizi</h2>
+    <p class="hint">Ek-13 Adım 2 — SOP-KK-05. <b>Δ9-THC ≤ %0,3</b> şartını sağlamayan lot otomatik <b>RET</b> edilir ve üretime giremez.</p>
+    <form id="f-analiz">
+      <div class="grid c4">
+        <label class="field"><span>Karantina Lotu *</span><select name="lot" required id="sel-hm-karantina"></select></label>
+        <label class="field"><span>Analiz Rapor No *</span><input name="analizRaporNo" required></label>
+        <label class="field"><span>Δ9-THC (%) *</span><input name="thc" type="number" step="0.001" min="0" required placeholder="≤ 0,300"></label>
+        <label class="field"><span>CBD (%) *</span><input name="cbd" type="number" step="0.01" min="0" required></label>
+        <label class="field"><span>Laboratuvar</span><input name="lab" placeholder="Akredite lab adı"></label>
+        <label class="field"><span>Analiz Tarihi *</span><input name="analizTarihi" type="date" required></label>
+        <label class="field"><span>11 Zorunlu Analiz Uygun mu? *</span>
+          <select name="onbirAnaliz" required><option value="">Seçiniz</option><option value="E">Evet — tamamı uygun</option><option value="H">Hayır — uygunsuz</option></select></label>
+      </div>
+      <div class="row end mt"><button class="btn" type="submit">Analizi Kaydet ve Karar Ver</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Ham Madde Lotları</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Lot</th><th>Çiftçi</th><th>Teslim</th><th>Miktar</th><th>Kalan</th><th>THC%</th><th>CBD%</th><th>Statü</th><th></th></tr></thead>
+      <tbody id="t-hm"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================ ÜRETİM ============================ -->
+<section class="view" id="v-uretim">
+  <div class="card">
+    <h2>Üretim Serisi Aç</h2>
+    <p class="hint">Ek-13 Adım 3–10. Yalnızca <b>SERBEST</b> statüsündeki ham madde lotları seriye girdi olabilir. Birden fazla lot seçilirse soyağacı hepsini birden izler.</p>
+    <form id="f-seri">
+      <div class="grid c3">
+        <label class="field"><span>Ürün Tipi *</span>
+          <select name="urunTipi" required>
+            <option value="">Seçiniz</option>
+            <option value="DISTILAT">CBD Distilat (≥ %80)</option>
+            <option value="IZOLAT">CBD İzolat (≥ %99)</option>
+          </select></label>
+        <label class="field"><span>Üretim Tarihi *</span><input name="tarih" type="date" required></label>
+        <label class="field"><span>Üretim Sorumlusu *</span><input name="sorumlu" required value="Yücel EKER"></label>
+      </div>
+      <p class="hint mt"><b>Girdi ham madde lotları</b> — kullanılacak kg miktarını girin (boş bırakılan lot kullanılmaz):</p>
+      <div id="hm-secim" class="grid c2"></div>
+      <div class="row end mt"><button class="btn" type="submit">Seriyi Aç ve Ham Maddeyi Tüket</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Proses Kaydı ve Serbest Bırakma</h2>
+    <p class="hint">Kütle denkliği <b>%98–102</b> dışındaysa (SOP-ÜR-16 md. 5.2) sistem serbest bırakmayı engeller.</p>
+    <form id="f-serbest">
+      <div class="grid c3">
+        <label class="field"><span>Seri *</span><select name="seri" required id="sel-seri-acik"></select></label>
+        <label class="field"><span>Çıktı — Ana Ürün (kg) *</span><input name="ciktiKg" type="number" step="0.001" min="0" required></label>
+        <label class="field"><span>Fire — Posa/Kek/Dip (kg) *</span><input name="fireKg" type="number" step="0.001" min="0" required></label>
+        <label class="field"><span>Numune (kg)</span><input name="numuneKg" type="number" step="0.001" min="0" value="0.065"></label>
+        <label class="field"><span>Bitmiş Ürün CBD (%) *</span><input name="cbdSon" type="number" step="0.01" min="0" required></label>
+        <label class="field"><span>Bitmiş Ürün Δ9-THC (%) *</span><input name="thcSon" type="number" step="0.001" min="0" required></label>
+        <label class="field"><span>Kalıntı Çözücü (ppm)</span><input name="cozucu" type="number" step="1" min="0" placeholder="≤ 5000"></label>
+        <label class="field"><span>Açık Sapma / CAPA var mı? *</span>
+          <select name="sapma" required><option value="H">Hayır — açık kayıt yok</option><option value="E">Evet — açık kayıt var</option></select></label>
+        <label class="field"><span>Serbest Bırakan (Mesul Müdür) *</span><input name="serbestKisi" required value="Salih ÖZKAN"></label>
+      </div>
+      <div id="mb-onizleme" class="mt"></div>
+      <div class="row end mt">
+        <button class="btn ghost" type="button" id="btn-mb">Kütle Denkliğini Hesapla</button>
+        <button class="btn" type="submit">Değerlendir ve Karar Ver</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Üretim Serileri</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Seri</th><th>Ürün</th><th>Tarih</th><th>Girdi kg</th><th>Çıktı kg</th><th>Kütle Denk.</th><th>CBD%</th><th>THC%</th><th>Statü</th><th></th></tr></thead>
+      <tbody id="t-seri"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================ AMBALAJ ============================ -->
+<section class="view" id="v-ambalaj">
+  <div class="card">
+    <h2>Ambalajlama ve Tekil Karekod Üretimi</h2>
+    <p class="hint">Ek-13 Adım 12 — SOP-ÜR-12. Her ambalaj birimine <b>tekil</b> karekod basılır; İTS/BÜTS mantığında GS1 formatındadır. Yalnızca SERBEST seriler ambalajlanabilir.</p>
+    <form id="f-ambalaj">
+      <div class="grid c4">
+        <label class="field"><span>Seri *</span><select name="seri" required id="sel-seri-serbest"></select></label>
+        <label class="field"><span>Ambalaj Adedi *</span><input name="adet" type="number" min="1" max="500" required placeholder="Örn. 40"></label>
+        <label class="field"><span>Birim Dolum (g) *</span><input name="miktarG" type="number" step="0.01" min="0.01" required placeholder="Örn. 10"></label>
+        <label class="field"><span>Son Kullanma Tarihi *</span><input name="skt" type="date" required></label>
+      </div>
+      <div class="row end mt"><button class="btn" type="submit">Ambalajla ve Karekod Üret</button></div>
+    </form>
+  </div>
+
+  <div class="card no-print">
+    <h2>Karekod Etiketleri</h2>
+    <p class="hint">Üretilen etiketleri yazdırıp ambalaj birimlerine yapıştırın. Etiket mutabakatında <b>FARK = 0</b> olmalıdır (FRM-ÜR-12).</p>
+    <div class="row">
+      <label class="field" style="flex:1;min-width:200px"><span>Seri seç</span><select id="sel-etiket-seri"></select></label>
+      <button class="btn ghost" id="btn-etiket">Etiketleri Göster</button>
+      <button class="btn ghost" id="btn-yazdir">Yazdır</button>
+    </div>
+  </div>
+  <div id="etiket-alan"></div>
+
+  <div class="card">
+    <h2>Ambalaj Birimleri</h2>
+    <div class="row no-print" style="margin-bottom:12px">
+      <input id="q-paket" placeholder="Karekod / seri no ile filtrele..." style="max-width:340px">
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tekil Kod (UID)</th><th>Seri</th><th>Dolum</th><th>SKT</th><th>Konum</th><th>Statü</th></tr></thead>
+      <tbody id="t-paket"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================ SEVKİYAT ============================ -->
+<section class="view" id="v-sevkiyat">
+  <div class="card">
+    <h2>Alıcı Tanımla (Ecza Deposu / Eczane)</h2>
+    <p class="hint">Kapalı zincirin sonraki halkaları. Eczaneler GLN numarasıyla tanımlanır.</p>
+    <form id="f-alici">
+      <div class="grid c3">
+        <label class="field"><span>Tip *</span><select name="tip" required><option value="DEPO">Ecza Deposu</option><option value="ECZANE">Eczane</option></select></label>
+        <label class="field"><span>Ad / Ünvan *</span><input name="ad" required></label>
+        <label class="field"><span>GLN No</span><input name="gln" placeholder="868..."></label>
+        <label class="field"><span>İl *</span><input name="il" required></label>
+        <label class="field"><span>Yetkili</span><input name="yetkili"></label>
+        <label class="field"><span>Adres</span><input name="adres"></label>
+      </div>
+      <div class="row end mt"><button class="btn" type="submit">Alıcı Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Sevkiyat — Kapalı Zincir</h2>
+    <p class="hint">Ek-13 Adım 16 — SOP-ÜR-14. Karekodu okutun veya yapıştırın. Sistem SERBEST olmayan ürünün sevkine izin vermez.</p>
+    <form id="f-sevk">
+      <div class="grid c3">
+        <label class="field"><span>Alıcı *</span><select name="aliciId" required id="sel-alici"></select></label>
+        <label class="field"><span>Sevk Tarihi *</span><input name="tarih" type="date" required></label>
+        <label class="field"><span>Onaylı Taşıyıcı *</span><input name="tasiyici" required></label>
+        <label class="field"><span>Mühür No *</span><input name="muhurNo" required></label>
+        <label class="field"><span>İrsaliye No *</span><input name="irsaliye" required></label>
+        <label class="field"><span>Teslim Alan Yetkili *</span><input name="teslimAlan" required></label>
+      </div>
+      <label class="field mt"><span>Karekod Okutma — her satıra bir tekil kod</span>
+        <textarea name="kodlar" id="sevk-kodlar" rows="5" placeholder="Barkod okuyucuyla okutun; her okuma alt satıra düşer."></textarea></label>
+      <div id="sevk-onizleme"></div>
+      <div class="row end mt">
+        <button class="btn ghost" type="button" id="btn-sevk-kontrol">Kodları Doğrula</button>
+        <button class="btn" type="submit">Sevkiyatı Kaydet ve BÜTS'e Bildir</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Sevkiyatlar</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Sevk No</th><th>Tarih</th><th>Alıcı</th><th>Adet</th><th>Taşıyıcı</th><th>Mühür</th><th>BÜTS Ref</th></tr></thead>
+      <tbody id="t-sevk"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================ ECZANE SATIŞ ============================ -->
+<section class="view" id="v-eczane">
+  <div class="card">
+    <h2>Eczane — Hastaya Satış / Teslim</h2>
+    <p class="hint">Zincirin son halkası. Ürünün hangi hastaya, hangi reçeteyle verildiği kayda geçer.</p>
+    <div class="alert warn">
+      <b>KVKK uyarısı:</b> Hasta kimlik bilgisi sistemde <b>maskelenerek</b> saklanır (örn. 123*****89). Açık kimlik yalnızca reçete numarası üzerinden ilgili kurumca eşleştirilir. Sağlık verisi özel nitelikli kişisel veridir; açık rıza ve aydınlatma yükümlülüğü eczanededir.
+    </div>
+    <form id="f-satis">
+      <div class="grid c3">
+        <label class="field"><span>Eczane *</span><select name="aliciId" required id="sel-eczane"></select></label>
+        <label class="field"><span>Tekil Karekod *</span><input name="uid" required placeholder="Karekodu okutun"></label>
+        <label class="field"><span>Satış Tarihi *</span><input name="tarih" type="date" required></label>
+        <label class="field"><span>Hasta Adı (baş harfler) *</span><input name="musteriAd" required placeholder="Örn. A.Y."></label>
+        <label class="field"><span>Hasta TC (maskelenecek) *</span><input name="musteriTc" required maxlength="11" placeholder="11 hane"></label>
+        <label class="field"><span>Reçete No *</span><input name="receteNo" required></label>
+        <label class="field"><span>Reçeteyi Yazan Hekim</span><input name="hekim"></label>
+      </div>
+      <div class="row end mt"><button class="btn" type="submit">Satışı Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Satış Kayıtları</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Satış No</th><th>Tarih</th><th>Eczane</th><th>Tekil Kod</th><th>Seri</th><th>Hasta</th><th>Reçete</th></tr></thead>
+      <tbody id="t-satis"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================ İZLEME ============================ -->
+<section class="view" id="v-izle">
+  <div class="card">
+    <h2>İzleme Sorgusu — Tarladan Hastaya</h2>
+    <p class="hint">Tekil karekod, seri no, ham madde lotu veya çiftçi kodu girin. Sistem hem <b>geriye</b> (bu ürün nereden geldi) hem <b>ileriye</b> (nereye gitti) doğru zinciri çıkarır.</p>
+    <div class="row">
+      <input id="q-izle" placeholder="Örn. 01086800000000172112ABCDEF... / CBD-D-2026-0001 / HM-2026-0001 / CF-001" style="flex:1;min-width:280px">
+      <button class="btn" id="btn-izle">Sorgula</button>
+      <button class="btn ghost no-print" id="btn-izle-yazdir">Yazdır</button>
+    </div>
+  </div>
+  <div id="izle-sonuc"></div>
+</section>
+
+<!-- ============================ GERİ ÇEKME ============================ -->
+<section class="view" id="v-gericekme">
+  <div class="card">
+    <h2>Geri Çekme (Recall) Simülasyonu</h2>
+    <p class="hint">SOP-KG-07. Bir ham madde lotunda veya üretim serisinde sorun tespit edildiğinde, etkilenen <b>tüm</b> ambalaj birimleri, eczaneler ve hastalar anında listelenir.</p>
+    <div class="row">
+      <label class="field" style="flex:1;min-width:240px"><span>Geri çekilecek kayıt</span><select id="sel-recall"></select></label>
+      <button class="btn danger" id="btn-recall" style="align-self:flex-end">Etki Analizi Yap</button>
+    </div>
+  </div>
+  <div id="recall-sonuc"></div>
+</section>
+
+<!-- ============================ BÜTS ============================ -->
+<section class="view" id="v-buts">
+  <div class="card">
+    <h2>BÜTS Bildirim Kuyruğu</h2>
+    <p class="hint">SOP-ÜR-16. Üretim, sevkiyat, satış, fire ve imha hareketleri için oluşan bildirimler. Gerçek entegrasyonda bu kuyruk Kurumun web servisine gönderilir.</p>
+    <div class="alert warn no-print">
+      <b>Entegrasyon notu:</b> Bu ekran bildirimleri <b>hazırlar ve kuyruklar</b>; Kuruma otomatik gönderim için resmi BÜTS web servis kimlik bilgileri (kullanıcı/şifre/uç nokta) gereklidir. Bunlar temin edildiğinde gönderim katmanı bu kuyruğa bağlanır.
+    </div>
+    <div class="row no-print" style="margin-bottom:12px">
+      <button class="btn ghost" id="btn-buts-json">Bekleyenleri JSON Olarak Dışa Aktar</button>
+      <button class="btn ghost" id="btn-buts-onay">Bekleyenleri Gönderildi İşaretle</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Bildirim No</th><th>Zaman</th><th>Tip</th><th>İlgili Kayıt</th><th>Adet</th><th>Durum</th></tr></thead>
+      <tbody id="t-buts"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================ AYAR ============================ -->
+<section class="view" id="v-ayar">
+  <div class="card">
+    <h2>Veri Yönetimi</h2>
+    <p class="hint">Kayıtlar tarayıcının yerel deposunda tutulur. <b>Düzenli yedek alın.</b></p>
+    <div class="row">
+      <button class="btn ghost" id="btn-export">Tüm Veriyi Yedekle (JSON)</button>
+      <button class="btn ghost" id="btn-import">Yedekten Geri Yükle</button>
+      <input type="file" id="file-import" accept="application/json" style="display:none">
+      <button class="btn ghost" id="btn-demo">Örnek Veri Yükle</button>
+      <button class="btn danger" id="btn-reset">Tüm Veriyi Sil</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Kullanıcı</h2>
+    <p class="hint">Denetim izine bu isim yazılır (ALCOA+ — atfedilebilirlik).</p>
+    <div class="row">
+      <label class="field" style="max-width:280px"><span>Aktif kullanıcı</span><input id="in-kullanici"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Karekod Formatı</h2>
+    <p class="hint">Üretilen kod GS1 uygulama tanımlayıcı (AI) yapısındadır — İTS/BÜTS mantığıyla aynı.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>AI</th><th>Alan</th><th>Açıklama</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">01</td><td>GTIN (14 hane)</td><td>Ürün numarası — ürün tipine göre sabit</td></tr>
+        <tr><td class="mono">21</td><td>Tekil Seri No</td><td>Her ambalaj birimine özgü, tekrarlanmaz</td></tr>
+        <tr><td class="mono">17</td><td>SKT (YYAAGG)</td><td>Son kullanma tarihi</td></tr>
+        <tr><td class="mono">10</td><td>Parti / Seri No</td><td>Üretim serisi — soyağacının anahtarı</td></tr>
+      </tbody>
+    </table></div>
+    <div class="alert warn mt"><b>Not:</b> İTS'te fiziksel etikette <b>DataMatrix</b> sembolü kullanılır. Bu uygulama aynı veriyi <b>QR</b> olarak basar; veri içeriği birebir aynıdır. Resmî etiket basımına geçerken sembol tipi DataMatrix'e çevrilmelidir.</div>
+  </div>
+</section>
+
+</main>
+
+<div id="toast"></div>
+
+<script src="assets/qrcode.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

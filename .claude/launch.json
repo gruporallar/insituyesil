@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "izlenebilirlik",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "izlenebilirlik", "run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "izleme",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8777", "--directory", "Izleme-Sistemi"],
+      "port": 8777
+    }
+  ]
+}

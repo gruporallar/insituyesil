@@ -1,0 +1,15 @@
+TURSO_DATABASE_URL=libsql://buraya-turso-adresiniz
+TURSO_AUTH_TOKEN=buraya-turso-tokeniniz
+RUN_DB_INIT=1
+SEED_ADMIN_EMAIL=sizin@epostaniz.com
+SEED_ADMIN_PASSWORD=EnAzOnIkiKarakterliSifre
+SEED_ADMIN_NAME=Salih ÖZKAN
+
+
+
+eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODY3MDEwNzIsImlkIjoiMDE5ZmZmYWMtZWQwMS03NGY3LWE3MjYtODEyNmQwMTFhYzY0Iiwia2lkIjoiNVlDeXJYbm9taFd2M2NqSjFNX0ZkXzdrSTZtbWNQX0MxQWpacEZsZTVSQSIsInJpZCI6ImZhZGQwNGQ0LTcxYmUtNGRiOS1hZGY5LTRlNmNlMjBkN2QxYiJ9.1c3sShdG8ODIpk4RJyG7_6oyi6ErJiufvjM7rFgaaumEuqqz-nYJDHA22uNAxbdh1Kzd-18sEOvZXm8Tn956Bg
+
+
+libsql://insitu-izlenebilirlik-mehmetoral.aws-eu-west-1.turso.io
+
+insituyesil8075??

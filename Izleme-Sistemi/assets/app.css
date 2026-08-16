@@ -1,0 +1,255 @@
+/* İnsitu Yeşil Teknolojiler — İzlenebilirlik Sistemi
+   Stil katmanı. Açık/koyu tema destekli. */
+
+:root {
+  --bg: #f4f6f4;
+  --surface: #ffffff;
+  --surface-2: #eef1ee;
+  --border: #d6ddd6;
+  --text: #16201a;
+  --text-dim: #5d6b61;
+  --accent: #1f7a4d;
+  --accent-soft: #e3f2e9;
+  --accent-text: #ffffff;
+
+  --st-karantina: #b8860b;
+  --st-karantina-bg: #fdf4dc;
+  --st-serbest: #1f7a4d;
+  --st-serbest-bg: #e3f2e9;
+  --st-ret: #b3261e;
+  --st-ret-bg: #fce8e6;
+  --st-sevk: #1d4ed8;
+  --st-sevk-bg: #e4ecfd;
+  --st-satildi: #6b21a8;
+  --st-satildi-bg: #f3e8fd;
+
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .07), 0 4px 14px rgba(0, 0, 0, .04);
+  --mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10150f;
+    --surface: #182018;
+    --surface-2: #1f2a1f;
+    --border: #2e3d2e;
+    --text: #e6ece6;
+    --text-dim: #9aab9d;
+    --accent: #4ea87a;
+    --accent-soft: #1d3327;
+    --accent-text: #06140c;
+
+    --st-karantina: #e0b33c;
+    --st-karantina-bg: #33290d;
+    --st-serbest: #4ea87a;
+    --st-serbest-bg: #12301f;
+    --st-ret: #f2857c;
+    --st-ret-bg: #3a1512;
+    --st-sevk: #7ba5f5;
+    --st-sevk-bg: #14203c;
+    --st-satildi: #c79af0;
+    --st-satildi-bg: #2a1440;
+    --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ---------- Üst bar ---------- */
+header.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.brand { display: flex; flex-direction: column; line-height: 1.25; }
+.brand strong { font-size: 15px; letter-spacing: .2px; }
+.brand span { font-size: 11.5px; color: var(--text-dim); }
+
+nav.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
+
+nav.tabs button {
+  font: inherit;
+  font-size: 13.5px;
+  padding: 7px 13px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+nav.tabs button:hover { background: var(--surface-2); color: var(--text); }
+nav.tabs button[aria-current="page"] {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+main { padding: 20px; max-width: 1280px; margin: 0 auto; }
+
+.view { display: none; }
+.view.active { display: block; }
+
+/* ---------- Kartlar ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.card > h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  letter-spacing: .2px;
+}
+.card > h2 + p.hint { margin: 0 0 16px; }
+
+p.hint { color: var(--text-dim); font-size: 13px; margin: 0 0 12px; }
+
+.grid { display: grid; gap: 14px; }
+.grid.c2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.grid.c3 { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.grid.c4 { grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); }
+
+/* ---------- Form öğeleri ---------- */
+label.field { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; color: var(--text-dim); }
+label.field > span { font-weight: 600; letter-spacing: .2px; }
+
+input, select, textarea {
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+input[readonly] { color: var(--text-dim); }
+textarea { resize: vertical; min-height: 62px; }
+
+.btn {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  cursor: pointer;
+}
+.btn:hover { filter: brightness(1.07); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--accent-soft); }
+.btn.danger { background: var(--st-ret); border-color: var(--st-ret); color: #fff; }
+.btn.sm { padding: 5px 11px; font-size: 12.5px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+
+.row { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+.row.end { justify-content: flex-end; }
+.mt { margin-top: 14px; }
+
+/* ---------- Rozetler ---------- */
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  white-space: nowrap;
+}
+.badge.KARANTINA { background: var(--st-karantina-bg); color: var(--st-karantina); }
+.badge.SERBEST   { background: var(--st-serbest-bg);   color: var(--st-serbest); }
+.badge.RET       { background: var(--st-ret-bg);       color: var(--st-ret); }
+.badge.SEVK      { background: var(--st-sevk-bg);      color: var(--st-sevk); }
+.badge.SATILDI   { background: var(--st-satildi-bg);   color: var(--st-satildi); }
+.badge.IMHA      { background: var(--st-ret-bg);       color: var(--st-ret); }
+
+code, .mono { font-family: var(--mono); font-size: 12.5px; }
+
+/* ---------- Tablo ---------- */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--text-dim); font-size: 11.5px; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+tbody tr:hover { background: var(--surface-2); }
+td.num { text-align: right; font-family: var(--mono); }
+
+.empty { color: var(--text-dim); font-size: 13px; padding: 22px; text-align: center; }
+
+/* ---------- KPI ---------- */
+.kpi { background: var(--surface-2); border-radius: var(--radius); padding: 13px 15px; border: 1px solid var(--border); }
+.kpi .v { font-size: 25px; font-weight: 700; font-family: var(--mono); line-height: 1.15; }
+.kpi .l { font-size: 11.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; }
+
+/* ---------- Soyağacı zinciri ---------- */
+.chain { display: flex; flex-direction: column; gap: 0; }
+
+.node {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface-2);
+  padding: 11px 14px;
+}
+.node .n-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.node .n-title { font-weight: 700; font-size: 13.5px; }
+.node .n-meta { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+.node .n-meta b { color: var(--text); font-weight: 600; }
+
+.arrow { color: var(--text-dim); font-size: 15px; padding: 3px 0 3px 15px; line-height: 1; }
+
+/* ---------- QR ---------- */
+.qr-box { text-align: center; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid var(--border); }
+.qr-box img, .qr-box table { max-width: 100%; }
+.qr-cap { font-family: var(--mono); font-size: 11px; color: #333; margin-top: 7px; word-break: break-all; }
+
+/* ---------- Uyarı kutuları ---------- */
+.alert { padding: 11px 14px; border-radius: 8px; font-size: 13.5px; margin-bottom: 14px; border: 1px solid; }
+.alert.warn { background: var(--st-karantina-bg); color: var(--st-karantina); border-color: currentColor; }
+.alert.err  { background: var(--st-ret-bg); color: var(--st-ret); border-color: currentColor; }
+.alert.ok   { background: var(--st-serbest-bg); color: var(--st-serbest); border-color: currentColor; }
+
+/* ---------- Toast ---------- */
+#toast {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: var(--bg);
+  padding: 11px 20px; border-radius: 9px; font-size: 14px; font-weight: 600;
+  box-shadow: var(--shadow); z-index: 200; opacity: 0; pointer-events: none;
+  transition: opacity .22s;
+}
+#toast.show { opacity: 1; }
+
+/* ---------- Yazdırma ---------- */
+@media print {
+  header.topbar, nav.tabs, .no-print { display: none !important; }
+  body { background: #fff; color: #000; }
+  .card { box-shadow: none; border: 1px solid #999; page-break-inside: avoid; }
+}
