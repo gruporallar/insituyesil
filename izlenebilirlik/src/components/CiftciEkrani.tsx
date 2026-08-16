@@ -17,7 +17,7 @@ const BOS = {
   il: "", ilce: "", parsel: "", alan_dekar: "", tel: "",
 };
 
-export function CiftciEkrani({ kayitlar, yazabilir }: { kayitlar: any[]; yazabilir: boolean }) {
+export function CiftciEkrani({ kayitlar, yazabilir, disaAktarabilir }: { kayitlar: any[]; yazabilir: boolean; disaAktarabilir: boolean }) {
   const router = useRouter();
   const bildirim = useBildirim();
   const [form, setForm] = useState(BOS);
@@ -88,7 +88,7 @@ export function CiftciEkrani({ kayitlar, yazabilir }: { kayitlar: any[]; yazabil
         </AcilirKart>
       )}
 
-      <Kart baslik={`Kayıtlı Çiftçiler (${kayitlar.length})`} sag={<DisaAktar tip="ciftci" />}>
+      <Kart baslik={`Kayıtlı Çiftçiler (${kayitlar.length})`} sag={disaAktarabilir ? <DisaAktar tip="ciftci" /> : null}>
         <Tablo basliklar={["Kod", "Ad / Ünvan", "Ekim İzni", "Konum", "Parsel", "Teslimat", "Toplam kg"]}>
           {kayitlar.length === 0 ? (
             <Bos sutun={7}>Henüz çiftçi kaydı yok.</Bos>

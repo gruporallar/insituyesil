@@ -17,10 +17,12 @@ export default async function SapmaSayfasi() {
   const [kayitlar, lotlar, seriler] = await Promise.all([
     db
       .prepare(
-        `SELECT s.*, a.ad_soyad AS acan_ad, kp.ad_soyad AS kapatan_ad
+        `SELECT s.*, a.ad_soyad AS acan_ad, kp.ad_soyad AS kapatan_ad,
+                ed.ad_soyad AS etkinlik_dogrulayan_ad
            FROM sapmalar s
            LEFT JOIN kullanicilar a ON a.id = s.acan_id
            LEFT JOIN kullanicilar kp ON kp.id = s.kapatan_id
+           LEFT JOIN kullanicilar ed ON ed.id = s.etkinlik_dogrulayan_id
           ORDER BY s.durum = 'KAPALI', s.kod DESC`
       )
       .all(),
@@ -35,6 +37,7 @@ export default async function SapmaSayfasi() {
       seriler={seriler.map((x: any) => x.seri)}
       acabilir={eylemYetkili(k, "sapma_ac")}
       kapatabilir={eylemYetkili(k, "sapma_kapat")}
+      disaAktarabilir={eylemYetkili(k, "disa_aktar")}
     />
   );
 }

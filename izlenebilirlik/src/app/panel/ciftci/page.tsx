@@ -21,5 +21,5 @@ export default async function CiftciSayfasi() {
     )
     .all();
 
-  return <CiftciEkrani kayitlar={kayitlar} yazabilir={eylemYetkili(k, "ciftci_yaz")} />;
+  return <CiftciEkrani kayitlar={kayitlar} yazabilir={eylemYetkili(k, "ciftci_yaz")} disaAktarabilir={eylemYetkili(k, "disa_aktar")} />;
 }

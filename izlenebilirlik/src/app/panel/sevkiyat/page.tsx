@@ -50,6 +50,7 @@ export default async function SevkiyatSayfasi({
       sevkiyatlar={sevkiyatlar}
       aliciYetkisi={eylemYetkili(k, "alici_yaz")}
       sevkYetkisi={eylemYetkili(k, "sevk_yaz")}
+      disaAktarabilir={eylemYetkili(k, "disa_aktar")}
       // Hızlı İşlem ekranından "Sevkiyata Ekle" ile gelinmişse birim listede
       // hazır olsun — operatör aynı kutuyu ikinci kez okutmasın.
       ilkKod={typeof sp.kod === "string" ? sp.kod : ""}

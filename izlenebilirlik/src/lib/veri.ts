@@ -88,16 +88,16 @@ const DENETIM_SQL = [
   ...ZINCIR_SQL,
   // Zaman damgaları HAM hâliyle: date() ile güne yuvarlamak, aynı gün
   // içindeki "önce mi sonra mı" sorusunu cevaplanamaz kılıyordu.
-  `SELECT kod, kaynak_tip, kaynak_kod, konu, kok_neden, capa, termin, durum, acilis_tarihi
+  `SELECT kod, kaynak_tip, kaynak_kod, konu, kok_neden, capa, sorumlu, termin, durum, acilis_tarihi
      FROM sapmalar`,
   `SELECT kod, tip, kaynak_kod, tanik_1, tanik_2, tutanak_no, bertaraf_firma, tarih
      FROM imha_kayitlari`,
-  "SELECT seri, basilan, kullanilan, bozuk, imha_edilen, fark FROM etiket_mutabakat",
+  "SELECT seri, basilan, kullanilan, bozuk, imha_edilen, fark, tarih FROM etiket_mutabakat",
   "SELECT seri, adim_kod, uygun FROM proses_kayitlari",
   "SELECT kod, seri, saklama_sonu, durum FROM sahit_numuneler",
   "SELECT kod, tarih, karar, gerekce, seri FROM iadeler",
   "SELECT kod, tarih, sonuc, konu, kaynak FROM sikayetler",
-  "SELECT id, rol, aktif FROM kullanicilar",
+  "SELECT id, ad_soyad, rol, gorev_kodu, aktif FROM kullanicilar",
   "SELECT DISTINCT kaynak_tip, kaynak_kod FROM ekler",
   "SELECT seri, serbest_tarih FROM seriler WHERE serbest_tarih IS NOT NULL",
   // D-19: serbest lotta zorunlu analiz parametresi eksik mi?
@@ -140,7 +140,9 @@ export async function denetimTaramaVerisi() {
     sikayetler: sikayetler as any,
     kullanicilar: (kullanicilar as any[]).map((k) => ({
       id: Number(k.id),
+      ad_soyad: String(k.ad_soyad),
       rol: String(k.rol),
+      gorev_kodu: k.gorev_kodu ? String(k.gorev_kodu) : null,
       aktif: Number(k.aktif),
     })),
     ekliKayitlar: (ekler as any[]).map((e) => `${e.kaynak_tip}:${e.kaynak_kod}`),

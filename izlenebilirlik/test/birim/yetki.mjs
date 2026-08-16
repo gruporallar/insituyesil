@@ -174,6 +174,16 @@ t("okuyucu ekran görebilir — denetçi bakabilmeli", () => {
   assert.equal(ekranGorunur(kul("okuyucu"), "sifre"), true);
 });
 
+t("toplu veri dışa aktarma salt ekran okumasından ayrı yetkidir", () => {
+  assert.equal(ekranGorunur(kul("okuyucu"), "sapma"), true);
+  assert.equal(eylemYetkili(kul("okuyucu"), "disa_aktar"), false);
+  assert.equal(eylemYetkili(kul("depo"), "disa_aktar"), true);
+  assert.equal(
+    eylemYetkili(kul("depo", { rol_eylem_izinleri: { disa_aktar: false } }), "disa_aktar"),
+    false
+  );
+});
+
 // ── Oturum açılışı ──────────────────────────────────────────────────────────
 
 t("hiç ekranı olmayan kullanıcı sonsuz yönlendirmeye girmiyor", () => {

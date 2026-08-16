@@ -57,6 +57,7 @@ export default async function SatisSayfasi({
       eczaneler={eczaneler}
       satislar={satislar}
       yazabilir={eylemYetkili(k, "satis_yaz")}
+      disaAktarabilir={eylemYetkili(k, "disa_aktar")}
       sayfalama={{ toplam, ilk, son, sayfa: filtre.sayfa, toplamSayfa }}
     />
   );

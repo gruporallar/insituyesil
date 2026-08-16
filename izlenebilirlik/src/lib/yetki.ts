@@ -275,6 +275,12 @@ const EYLEM_ROLLERI = {
   /** Şikayet değerlendirme ve kapatma — SOP-KG-07. */
   sikayet_kapat: ["yonetici", "mesul_mudur", "kg_kk"],
   /**
+   * Toplu veri dışa aktarma — ekranı görmekten ayrı bir veri çıkış yetkisi.
+   * Üretim ve depo kendi operasyon listelerini alabilir; okuyucu yalnız
+   * ekranda inceleyebilir. Rol yöneticisi gerektiğinde bu yetkiyi daraltır.
+   */
+  disa_aktar: ["yonetici", "mesul_mudur", "kg_kk", "uretim", "depo"],
+  /**
    * Görev kural tablosunu düzenleme ve ONAYLAMA — SOP-KG-01.
    *
    * Kural tablosu, SOP'lardaki periyodik hükümlerin makine okunur hâli; yani
@@ -326,6 +332,7 @@ export const EYLEM_ETIKETLERI: Record<Eylem, string> = {
   iade_karar: "iade kararı",
   sikayet_yaz: "şikayet kaydı",
   sikayet_kapat: "şikayet kapatma",
+  disa_aktar: "toplu veri dışa aktarma",
   gorev_kural_yonet: "görev kuralı düzenleme / onaylama",
   gorev_islem: "görev formu basma ve arşivleme",
   kullanici_yonet: "kullanıcı yönetimi",

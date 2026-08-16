@@ -56,9 +56,9 @@ function bosSatirlar(): Record<string, SatirDurumu> {
 }
 
 export function HamMaddeEkrani({
-  lotlar, ciftciler, kabulYetkisi, analizYetkisi, karantinaHepsi, sayfalama,
+  lotlar, ciftciler, kabulYetkisi, analizYetkisi, disaAktarabilir, karantinaHepsi, sayfalama,
 }: {
-  lotlar: any[]; ciftciler: any[]; kabulYetkisi: boolean; analizYetkisi: boolean;
+  lotlar: any[]; ciftciler: any[]; kabulYetkisi: boolean; analizYetkisi: boolean; disaAktarabilir: boolean;
   karantinaHepsi: any[];
   sayfalama: { toplam: number; ilk: number; son: number; sayfa: number; toplamSayfa: number };
 }) {
@@ -364,7 +364,7 @@ export function HamMaddeEkrani({
         kapat={() => setFotoLot(null)}
       />
 
-      <Kart baslik={`Ham Madde Lotları (${sayfalama.toplam})`} sag={<DisaAktar tip="hammadde" />}>
+      <Kart baslik={`Ham Madde Lotları (${sayfalama.toplam})`} sag={disaAktarabilir ? <DisaAktar tip="hammadde" /> : null}>
         <Filtre
           aramaIpucu="Lot, irsaliye, analiz rapor no veya çiftçi"
           statuler={[["KARANTINA", "Karantina"], ["SERBEST", "Serbest"], ["RET", "Ret"]]}

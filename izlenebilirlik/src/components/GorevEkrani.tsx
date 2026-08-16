@@ -102,11 +102,12 @@ export function GorevEkrani({
   return (
     <>
       {kuralSayim.onayli === 0 && (
-        <Uyari cesit="uyari" baslik="Görev kural tablosu henüz onaylanmamış">
-          Sistemde {kuralSayim.taslak} taslak kural var ve onaylanmadıkları için görev üretilmiyor.
-          Kural tablosu, SOP’lardaki periyodik hükümlerin makine okunur hâli — yani yıllık faaliyet
-          planınız. Onaylanmadan takvim çalışmaz; bu bilinçli, çünkü kimin neye dayanarak kurduğu
-          belli olmayan bir takvim denetimde savunulamaz.
+        <Uyari cesit="uyari" baslik={kuralSayim.taslak > 0 ? "Görev kural tablosu henüz onaylanmamış" : "Görev kural tablosu tanımlanmamış"}>
+          {kuralSayim.taslak > 0
+            ? `Sistemde ${kuralSayim.taslak} taslak kural var; onaylanmadıkları için görev üretilmiyor. `
+            : "Sistemde taslak veya onaylı görev kuralı yok; bu nedenle takvim görev üretemiyor. "}
+          Kural tablosu, yürürlükteki SOP’lardaki periyodik hükümlerin kontrollü ve onaylı
+          karşılığıdır. Doküman sahibi kural setini doğrulayıp onaylamadan takvim çalıştırılmamalıdır.
         </Uyari>
       )}
 

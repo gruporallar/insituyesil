@@ -49,7 +49,8 @@ export interface Bulgu {
 export interface DenetimVerisi extends ZincirVeri {
   sapmalar: {
     kod: string; kaynak_tip: string; kaynak_kod: string | null; konu: string;
-    kok_neden: string | null; capa: string | null; termin: string | null; durum: string;
+    kok_neden: string | null; capa: string | null; sorumlu?: string | null;
+    termin: string | null; durum: string;
     /** Sapmanın açıldığı tarih — serbest bırakmadan önce mi sonra mı? */
     acilis_tarihi?: string | null;
   }[];
@@ -59,12 +60,17 @@ export interface DenetimVerisi extends ZincirVeri {
     kod: string; tip: string; kaynak_kod: string; tanik_1: string; tanik_2: string;
     tutanak_no: string; bertaraf_firma: string | null; tarih: string;
   }[];
-  mutabakatlar: { seri: string; basilan: number; kullanilan: number; bozuk: number; imha_edilen: number; fark: number }[];
+  mutabakatlar: {
+    seri: string; basilan: number; kullanilan: number; bozuk: number;
+    imha_edilen: number; fark: number; tarih?: string | null;
+  }[];
   prosesler: { seri: string; adim_kod: string; uygun: number }[];
   numuneler: { kod: string; seri: string; saklama_sonu: string; durum: string }[];
   iadeler: { kod: string; tarih: string; karar: string }[];
   sikayetler: { kod: string; tarih: string; sonuc: string }[];
-  kullanicilar: { id: number; rol: string; aktif: number }[];
+  kullanicilar: {
+    id: number; ad_soyad?: string; rol: string; gorev_kodu?: string | null; aktif: number;
+  }[];
   /** Fotoğraf eki olan kayıtların anahtarları: "SAPMA:SAP-2026-0001" gibi. */
   ekliKayitlar: string[];
   /** Ham madde analiz satırları — D-19 parametre eksikliği kontrolü. */
@@ -214,6 +220,23 @@ export function onDenetim(v: DenetimVerisi, bugun: string): DenetimSonucu {
     });
   }
 
+  // 4b. Gelecek tarihli mutabakat, kaydın olay anında tutulduğu iddiasını
+  // bozar. API yeni girişleri reddeder; bu kontrol eski/aktarılmış veriyi de
+  // görünür kılar. Tarih sessizce düzeltilmez, hatalı kayıt sapmayla ele alınır.
+  const gelecekMutabakat = v.mutabakatlar.filter((m) => m.tarih && m.tarih > bugun);
+  if (gelecekMutabakat.length) {
+    b.push({
+      kod: "D-04B",
+      seviye: "KRITIK",
+      baslik: "Gelecek tarihli etiket mutabakatı",
+      detay: `${gelecekMutabakat.length} etiket mutabakatı bugünden sonraki bir tarihle kaydedilmiş. Kayıt kronolojisi ve eşzamanlılık ilkesi doğrulanamıyor.`,
+      kayitlar: gelecekMutabakat.map((m) => `${m.seri} (${m.tarih})`),
+      dayanak: "ALCOA+ — kayıtlar eşzamanlı, doğru ve kronolojik olmalıdır / FRM-ÜR-12",
+      oneri: "Ham formu doğrulayın; hatalı sistem kaydını silmeden sapma açın ve doğrulanmış tarihi izlenebilir bir düzeltmeyle kaydedin.",
+      yol: "/panel/ambalaj",
+    });
+  }
+
   // 5. Ambalajlanmış ama mutabakatı hiç yapılmamış seri
   const ambalajli = [...new Set(v.paketler.map((p) => p.seri))];
   const mutabakatsiz = ambalajli.filter((s) => !v.mutabakatlar.some((m) => m.seri === s));
@@ -275,6 +298,22 @@ export function onDenetim(v: DenetimVerisi, bugun: string): DenetimSonucu {
       kayitlar: gecikmis.map((s) => `${s.kod} (termin ${s.termin}, ${gunFarki(bugun, s.termin!)} gün gecikme)`),
       dayanak: "SOP-KG-03 — sapmalar termininde kapatılır",
       oneri: "Kapatın ya da terminini gerekçeli olarak revize edin.",
+      yol: "/panel/sapma",
+    });
+  }
+
+  const plansizSapmalar = v.sapmalar.filter(
+    (s) => s.durum === "ACIK" && (!s.sorumlu?.trim() || !s.termin)
+  );
+  if (plansizSapmalar.length) {
+    b.push({
+      kod: "D-08B",
+      seviye: "YUKSEK",
+      baslik: "Sorumlusu veya termini olmayan açık sapma",
+      detay: `${plansizSapmalar.length} açık sapmanın kapatma sorumlusu ya da hedef tarihi tanımlı değil.`,
+      kayitlar: plansizSapmalar.map((s) => s.kod),
+      dayanak: "SOP-KG-03 — sapma araştırması sorumlu ve hedef tarih ile yönetilir",
+      oneri: "Her açık sapmaya ad-soyad/işlev bazında sorumlu ve gerçekçi termin atayın.",
       yol: "/panel/sapma",
     });
   }
@@ -404,6 +443,23 @@ export function onDenetim(v: DenetimVerisi, bugun: string): DenetimSonucu {
       kayitlar: [],
       dayanak: "KEK — Mesul Müdür ve vekilinin tanımlı olması",
       oneri: "Vekil Mesul Müdür için ikinci bir hesap tanımlayın.",
+      yol: "/panel/kullanicilar",
+    });
+  }
+
+  const gorevKoduGerekli = new Set(["mesul_mudur", "kg_kk", "uretim", "teknik", "depo"]);
+  const gorevKodsuz = v.kullanicilar.filter(
+    (k) => k.aktif === 1 && gorevKoduGerekli.has(k.rol) && !k.gorev_kodu?.trim()
+  );
+  if (gorevKodsuz.length) {
+    b.push({
+      kod: "D-16B",
+      seviye: "ORTA",
+      baslik: "Görev tanımı kodu olmayan aktif kullanıcı",
+      detay: `${gorevKodsuz.length} aktif operasyon/kalite hesabı onaylı görev tanımına bağlanmamış. Yetki ile yazılı sorumluluk eşleştirilemiyor.`,
+      kayitlar: gorevKodsuz.map((k) => k.ad_soyad || `Kullanıcı #${k.id}`),
+      dayanak: "KEK / GT-01…GT-06 — görev, yetki ve sorumlulukların tanımlı olması",
+      oneri: "Kullanıcıyı yürürlükteki görev tanımı koduyla eşleştirin; kod yoksa önce kontrollü görev tanımını yayımlayın.",
       yol: "/panel/kullanicilar",
     });
   }

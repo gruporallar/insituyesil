@@ -1,6 +1,6 @@
 import { getSession } from "@/lib/auth";
 import { logla, getDb, ensureEkTablolar, trBugun } from "@/lib/db";
-import { ekranGorunur, type Ekran } from "@/lib/yetki";
+import { ekranGorunur, eylemYetkili, type Ekran } from "@/lib/yetki";
 import { NextResponse } from "next/server";
 
 /**
@@ -64,8 +64,10 @@ const TANIMLAR: Record<string, Tanim> = {
   },
   sapma: {
     ekran: "sapma",
-    baslik: ["Kod", "Kaynak Tip", "Kaynak", "Konu", "Açıklama", "Kök Neden", "CAPA", "Sorumlu", "Termin", "Durum", "Açılış", "Kapanış", "Otomatik"],
-    sql: `SELECT kod, kaynak_tip, kaynak_kod, konu, aciklama, kok_neden, capa, sorumlu,
+    baslik: ["Kod", "Kaynak Tip", "Kaynak", "Konu", "Açıklama", "İlk Aksiyon", "Risk Değerlendirmesi", "Kök Neden", "CAPA", "CAPA Sorumlusu", "CAPA Termin", "Etkinlik Kriteri", "Etkinlik Tarihi", "Etkinlik Sonucu", "Sorumlu", "Termin", "Durum", "Açılış", "Kapanış", "Otomatik"],
+    sql: `SELECT kod, kaynak_tip, kaynak_kod, konu, aciklama, ilk_aksiyon,
+                 risk_degerlendirme, kok_neden, capa, capa_sorumlu, capa_termin,
+                 etkinlik_kriteri, etkinlik_tarihi, etkinlik_sonucu, sorumlu,
                  termin, durum, date(acilis_tarihi), kapanis_tarihi,
                  CASE otomatik WHEN 1 THEN 'Evet' ELSE 'Hayır' END
             FROM sapmalar ORDER BY kod`,
@@ -111,10 +113,14 @@ export async function GET(req: Request) {
     );
   }
 
-  // DIŞA AKTARMA DA EKRAN YETKİSİNE TABİ. Aksi halde ekranı göremeyen bir
-  // kullanıcı aynı veriyi dosya olarak indirebilirdi.
+  // İki koşul da gerekir: kaynak ekran erişimi ve ayrı toplu veri çıkış
+  // yetkisi. Salt okuma hesabının ekranı inceleyebilmesi, CSV'yi kurum dışına
+  // taşıyabilmesi anlamına gelmez.
   if (!ekranGorunur(k, tanim.ekran)) {
     return NextResponse.json({ hata: "Bu listeye erişim yetkiniz yok." }, { status: 403 });
+  }
+  if (!eylemYetkili(k, "disa_aktar")) {
+    return NextResponse.json({ hata: "Toplu veri dışa aktarma yetkiniz yok." }, { status: 403 });
   }
 
   await ensureEkTablolar();
@@ -130,12 +136,12 @@ export async function GET(req: Request) {
   const icerik = "﻿" + govde;
   const dosya = `insitu-${tip}-${trBugun()}.csv`;
 
-    // TOPLU VERİ ÇIKIŞI İZLENİR: kim, hangi tabloyu, ne zaman indirdi.
+  // TOPLU VERİ ÇIKIŞI İZLENİR: kim, hangi tabloyu, ne zaman indirdi.
   // Hasta ve çiftçi verisi içeren dosyalar sistemden çıkınca kontrol de
   // çıkar; geride en azından kaydı kalmalı (KVKK md. 12 erişim kaydı).
   await logla(k.id, "Dışa aktarım", tip, null);
 
-return new NextResponse(icerik, {
+  return new NextResponse(icerik, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${dosya}"`,

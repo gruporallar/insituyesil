@@ -30,6 +30,6 @@ export default async function ButsSayfasi() {
   ]);
 
   return (
-    <ButsEkrani kayitlar={kayitlar} ozet={ozet} isaretleyebilir={eylemYetkili(k, "buts_isaretle")} />
+    <ButsEkrani kayitlar={kayitlar} ozet={ozet} isaretleyebilir={eylemYetkili(k, "buts_isaretle")} disaAktarabilir={eylemYetkili(k, "disa_aktar")} />
   );
 }

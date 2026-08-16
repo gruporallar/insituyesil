@@ -318,8 +318,16 @@ async function initSchema(c: Client): Promise<void> {
       kaynak_kod TEXT,
       konu TEXT NOT NULL,
       aciklama TEXT,
+      ilk_aksiyon TEXT,
+      risk_degerlendirme TEXT,
       kok_neden TEXT,
       capa TEXT,
+      capa_sorumlu TEXT,
+      capa_termin TEXT,
+      etkinlik_kriteri TEXT,
+      etkinlik_tarihi TEXT,
+      etkinlik_sonucu TEXT,
+      etkinlik_dogrulayan_id INTEGER REFERENCES kullanicilar(id),
       sorumlu TEXT,
       termin TEXT,
       durum TEXT NOT NULL DEFAULT 'ACIK' CHECK(durum IN ('ACIK','KAPALI')),
@@ -1045,8 +1053,16 @@ export async function ensureEkTablolar(): Promise<void> {
         kaynak_kod TEXT,
         konu TEXT NOT NULL,
         aciklama TEXT,
+        ilk_aksiyon TEXT,
+        risk_degerlendirme TEXT,
         kok_neden TEXT,
         capa TEXT,
+        capa_sorumlu TEXT,
+        capa_termin TEXT,
+        etkinlik_kriteri TEXT,
+        etkinlik_tarihi TEXT,
+        etkinlik_sonucu TEXT,
+        etkinlik_dogrulayan_id INTEGER REFERENCES kullanicilar(id),
         sorumlu TEXT,
         termin TEXT,
         durum TEXT NOT NULL DEFAULT 'ACIK' CHECK(durum IN ('ACIK','KAPALI')),
@@ -1128,6 +1144,23 @@ export async function ensureEkTablolar(): Promise<void> {
       try {
         await c.execute("ALTER TABLE buts_kuyruk ADD COLUMN kurum_ref TEXT");
       } catch { /* kolon zaten var */ }
+      // CAPA kapanışı yalnız iki serbest metinle yapılamaz. Aşağıdaki alanlar
+      // ilk düzeltmeyi, risk değerlendirmesini, sorumluyu/termini ve etkinlik
+      // doğrulamasını sapmanın ayrılmaz parçası hâline getirir. ALTER'lar
+      // idempotent: mevcut üretim verisi korunur, eski satırlar NULL kalır ve
+      // yeni kapanış akışı bu alanları zorunlu doldurur.
+      for (const sql of [
+        "ALTER TABLE sapmalar ADD COLUMN ilk_aksiyon TEXT",
+        "ALTER TABLE sapmalar ADD COLUMN risk_degerlendirme TEXT",
+        "ALTER TABLE sapmalar ADD COLUMN capa_sorumlu TEXT",
+        "ALTER TABLE sapmalar ADD COLUMN capa_termin TEXT",
+        "ALTER TABLE sapmalar ADD COLUMN etkinlik_kriteri TEXT",
+        "ALTER TABLE sapmalar ADD COLUMN etkinlik_tarihi TEXT",
+        "ALTER TABLE sapmalar ADD COLUMN etkinlik_sonucu TEXT",
+        "ALTER TABLE sapmalar ADD COLUMN etkinlik_dogrulayan_id INTEGER REFERENCES kullanicilar(id)",
+      ]) {
+        try { await c.execute(sql); } catch { /* kolon zaten var */ }
+      }
 
       // Uygulama ayarları — tek anahtar/değer. İlk kullanım: örnek veri bayrağı.
       try {

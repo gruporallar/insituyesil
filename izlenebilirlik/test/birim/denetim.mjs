@@ -71,8 +71,8 @@ function temiz() {
     iadeler: [],
     sikayetler: [],
     kullanicilar: [
-      { id: 1, rol: "mesul_mudur", aktif: 1 },
-      { id: 2, rol: "mesul_mudur", aktif: 1 },
+      { id: 1, ad_soyad: "Salih", rol: "mesul_mudur", gorev_kodu: "GT-01", aktif: 1 },
+      { id: 2, ad_soyad: "Vekil", rol: "mesul_mudur", gorev_kodu: "GT-01", aktif: 1 },
     ],
     ekliKayitlar: ["IMHA:IMH-2026-0001"],
     // D-19: serbest lotun 9 zorunlu parametresi tam.
@@ -154,6 +154,23 @@ t("D-04: fark sıfırsa bulgu yok — bozuk ama imha edilmiş etiket sorun deği
   assert.ok(!kodlar(onDenetim(v, BUGUN)).includes("D-04"));
 });
 
+t("D-04B: gelecek tarihli mutabakat kritik bulgu üretiyor", () => {
+  const v = temiz();
+  v.mutabakatlar[0].tarih = "2028-08-14";
+  const b = bul(onDenetim(v, BUGUN), "D-04B");
+  assert.ok(b);
+  assert.equal(b.seviye, "KRITIK");
+  assert.match(b.kayitlar[0], /2028-08-14/);
+});
+
+t("D-04B: bugünkü veya geçmiş mutabakat bulgu üretmiyor", () => {
+  for (const tarih of [BUGUN, "2026-08-14", null]) {
+    const v = temiz();
+    v.mutabakatlar[0].tarih = tarih;
+    assert.ok(!kodlar(onDenetim(v, BUGUN)).includes("D-04B"), `tarih=${tarih}`);
+  }
+});
+
 t("D-05: ambalajlı ama mutabakatsız seri yakalanıyor", () => {
   const v = temiz();
   v.mutabakatlar = [];
@@ -205,6 +222,22 @@ t("D-08: termini gelmemiş sapma bulgu değil", () => {
   v.sapmalar = [{ kod: "SAP-9", kaynak_tip: "DIGER", kaynak_kod: null, konu: "x",
     kok_neden: null, capa: null, termin: "2026-09-01", durum: "ACIK" }];
   assert.ok(!kodlar(onDenetim(v, BUGUN)).includes("D-08"));
+});
+
+t("D-08B: sorumlusu veya termini olmayan açık sapma yakalanıyor", () => {
+  for (const [sorumlu, termin] of [[null, "2026-09-01"], ["KG-KK", null], ["  ", "2026-09-01"]]) {
+    const v = temiz();
+    v.sapmalar = [{ kod: "SAP-9", kaynak_tip: "DIGER", kaynak_kod: null, konu: "x",
+      kok_neden: null, capa: null, sorumlu, termin, durum: "ACIK" }];
+    assert.ok(kodlar(onDenetim(v, BUGUN)).includes("D-08B"));
+  }
+});
+
+t("D-08B: sorumlusu ve termini olan açık sapma bulgu üretmiyor", () => {
+  const v = temiz();
+  v.sapmalar = [{ kod: "SAP-9", kaynak_tip: "DIGER", kaynak_kod: null, konu: "x",
+    kok_neden: null, capa: null, sorumlu: "KG-KK", termin: "2026-09-01", durum: "ACIK" }];
+  assert.ok(!kodlar(onDenetim(v, BUGUN)).includes("D-08B"));
 });
 
 t("D-09: BÜTS bildirilmemiş sevkiyat yakalanıyor", () => {
@@ -297,6 +330,25 @@ t("D-16: pasif Mesul Müdür sayılmıyor", () => {
     { id: 2, rol: "mesul_mudur", aktif: 0 },
   ];
   assert.ok(kodlar(onDenetim(v, BUGUN)).includes("D-16"));
+});
+
+t("D-16B: aktif GMP kullanıcısında görev kodu eksikliği yakalanıyor", () => {
+  const v = temiz();
+  v.kullanicilar[0].ad_soyad = "Fatih Test";
+  v.kullanicilar[0].gorev_kodu = null;
+  const b = bul(onDenetim(v, BUGUN), "D-16B");
+  assert.ok(b);
+  assert.match(b.kayitlar[0], /Fatih Test/);
+});
+
+t("D-16B: görev kodu olan veya pasif kullanıcı bulgu üretmiyor", () => {
+  const kodlu = temiz();
+  kodlu.kullanicilar.forEach((k) => { k.gorev_kodu = "GT-01"; });
+  assert.ok(!kodlar(onDenetim(kodlu, BUGUN)).includes("D-16B"));
+
+  const pasif = temiz();
+  pasif.kullanicilar.forEach((k) => { k.aktif = 0; k.gorev_kodu = null; });
+  assert.ok(!kodlar(onDenetim(pasif, BUGUN)).includes("D-16B"));
 });
 
 t("D-17: fotoğrafsız imha tutanağı BİLGİ seviyesinde, hazırlığı bozmuyor", () => {

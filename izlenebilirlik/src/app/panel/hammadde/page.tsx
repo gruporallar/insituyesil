@@ -55,6 +55,7 @@ export default async function HamMaddeSayfasi({
       ciftciler={ciftciler}
       kabulYetkisi={eylemYetkili(k, "hammadde_kabul")}
       analizYetkisi={eylemYetkili(k, "analiz_karar")}
+      disaAktarabilir={eylemYetkili(k, "disa_aktar")}
       karantinaHepsi={karantinaHepsi}
       sayfalama={{ toplam, ilk, son, sayfa: filtre.sayfa, toplamSayfa }}
     />

@@ -35,10 +35,10 @@ type Okunan = {
 };
 
 export function SevkiyatEkrani({
-  aliciar, sevkiyatlar, aliciYetkisi, sevkYetkisi, ilkKod = "", sayfalama,
+  aliciar, sevkiyatlar, aliciYetkisi, sevkYetkisi, disaAktarabilir, ilkKod = "", sayfalama,
 }: {
   aliciar: any[]; sevkiyatlar: any[];
-  aliciYetkisi: boolean; sevkYetkisi: boolean;
+  aliciYetkisi: boolean; sevkYetkisi: boolean; disaAktarabilir: boolean;
   ilkKod?: string;
   sayfalama: { toplam: number; ilk: number; son: number; sayfa: number; toplamSayfa: number };
 }) {
@@ -442,7 +442,7 @@ export function SevkiyatEkrani({
         </Kart>
       )}
 
-      <Kart baslik={`Sevkiyatlar (${sayfalama.toplam})`} sag={<DisaAktar tip="sevkiyat" />}>
+      <Kart baslik={`Sevkiyatlar (${sayfalama.toplam})`} sag={disaAktarabilir ? <DisaAktar tip="sevkiyat" /> : null}>
         <Filtre
           aramaIpucu="Sevk no, mühür, irsaliye, taşıyıcı veya alıcı"
           toplam={sayfalama.toplam}

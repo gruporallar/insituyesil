@@ -16,9 +16,9 @@ const TIP_ETIKET: Record<string, string> = {
 };
 
 export function ImhaEkrani({
-  bekleyen, kayitlar, yazabilir, kullaniciAdi,
+  bekleyen, kayitlar, yazabilir, disaAktarabilir, kullaniciAdi,
 }: {
-  bekleyen: any[]; kayitlar: any[]; yazabilir: boolean; kullaniciAdi: string;
+  bekleyen: any[]; kayitlar: any[]; yazabilir: boolean; disaAktarabilir: boolean; kullaniciAdi: string;
 }) {
   const router = useRouter();
   const bildirim = useBildirim();
@@ -173,7 +173,7 @@ export function ImhaEkrani({
         kapat={() => setFotoKod(null)}
       />
 
-      <Kart baslik={`İmha Tutanakları (${kayitlar.length})`} sag={<DisaAktar tip="imha" />}>
+      <Kart baslik={`İmha Tutanakları (${kayitlar.length})`} sag={disaAktarabilir ? <DisaAktar tip="imha" /> : null}>
         <Tablo basliklar={["Tutanak", "Tarih", "Tip", "Kaynak", "Miktar", "Tanıklar", "Bertaraf", "No", ""]}>
           {kayitlar.length === 0 ? (
             <Bos sutun={9}>Henüz imha tutanağı yok.</Bos>

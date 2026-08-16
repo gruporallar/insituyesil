@@ -54,6 +54,7 @@ export default async function UretimSayfasi({
       uygunLotlar={uygunLotlar}
       acmaYetkisi={eylemYetkili(k, "seri_ac")}
       serbestYetkisi={eylemYetkili(k, "seri_serbest")}
+      disaAktarabilir={eylemYetkili(k, "disa_aktar")}
       kullaniciAdi={k!.ad_soyad}
       acikSeriler={acikSeriler}
       sayfalama={{ toplam, ilk, son, sayfa: filtre.sayfa, toplamSayfa }}

@@ -11,9 +11,9 @@ import { Filtre } from "./Filtre";
 import { KarekodOkuyucu } from "./KarekodOkuyucu";
 
 export function SatisEkrani({
-  eczaneler, satislar, yazabilir, sayfalama,
+  eczaneler, satislar, yazabilir, disaAktarabilir, sayfalama,
 }: {
-  eczaneler: any[]; satislar: any[]; yazabilir: boolean;
+  eczaneler: any[]; satislar: any[]; yazabilir: boolean; disaAktarabilir: boolean;
   sayfalama: { toplam: number; ilk: number; son: number; sayfa: number; toplamSayfa: number };
 }) {
   const router = useRouter();
@@ -123,7 +123,7 @@ export function SatisEkrani({
         </Kart>
       )}
 
-      <Kart baslik={`Satış Kayıtları (${sayfalama.toplam})`} sag={<DisaAktar tip="satis" />}>
+      <Kart baslik={`Satış Kayıtları (${sayfalama.toplam})`} sag={disaAktarabilir ? <DisaAktar tip="satis" /> : null}>
         <Filtre
           aramaIpucu="Satış no, reçete no, hasta, eczane, seri veya tekil no"
           toplam={sayfalama.toplam}

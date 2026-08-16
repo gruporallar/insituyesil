@@ -20,10 +20,10 @@ const MB_ALT = 98;
 const MB_UST = 102;
 
 export function UretimEkrani({
-  seriler, uygunLotlar, acmaYetkisi, serbestYetkisi, kullaniciAdi, acikSeriler, sayfalama,
+  seriler, uygunLotlar, acmaYetkisi, serbestYetkisi, disaAktarabilir, kullaniciAdi, acikSeriler, sayfalama,
 }: {
   seriler: any[]; uygunLotlar: any[];
-  acmaYetkisi: boolean; serbestYetkisi: boolean; kullaniciAdi: string;
+  acmaYetkisi: boolean; serbestYetkisi: boolean; disaAktarabilir: boolean; kullaniciAdi: string;
   acikSeriler: any[];
   sayfalama: { toplam: number; ilk: number; son: number; sayfa: number; toplamSayfa: number };
 }) {
@@ -305,7 +305,7 @@ export function UretimEkrani({
       <Kart
         baslik={`Üretim Serileri (${sayfalama.toplam})`}
         aciklama="Fire ve numune sütunları kütle denkliğinin bileşenleri — denetimde bir oranın nereden çıktığı bu üç sayıdan okunur."
-        sag={<DisaAktar tip="seri" />}
+        sag={disaAktarabilir ? <DisaAktar tip="seri" /> : null}
       >
         <Filtre
           aramaIpucu="Seri no, üretim sorumlusu veya serbest bırakan"

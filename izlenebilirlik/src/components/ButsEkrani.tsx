@@ -21,9 +21,9 @@ const TIP_ETIKET: Record<string, string> = {
 };
 
 export function ButsEkrani({
-  kayitlar, ozet, isaretleyebilir,
+  kayitlar, ozet, isaretleyebilir, disaAktarabilir,
 }: {
-  kayitlar: any[]; ozet: any; isaretleyebilir: boolean;
+  kayitlar: any[]; ozet: any; isaretleyebilir: boolean; disaAktarabilir: boolean;
 }) {
   const router = useRouter();
   const bildirim = useBildirim();
@@ -122,7 +122,7 @@ export function ButsEkrani({
         </Uyari>
 
         <div className="yazdirma-gizle mb-3 flex flex-wrap gap-2">
-          <DisaAktar tip="buts" etiket="Tümünü Excel'e Aktar" />
+          {disaAktarabilir && <DisaAktar tip="buts" etiket="Tümünü Excel'e Aktar" />}
           <Dugme cesit="ikincil" onClick={disaAktar} disabled={!bekleyenler.length}>
             Bekleyenleri JSON Olarak Dışa Aktar ({bekleyenler.length})
           </Dugme>

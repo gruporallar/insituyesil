@@ -52,6 +52,7 @@ export default async function ImhaSayfasi() {
       bekleyen={bekleyen}
       kayitlar={kayitlar}
       yazabilir={eylemYetkili(k, "imha_yaz")}
+      disaAktarabilir={eylemYetkili(k, "disa_aktar")}
       kullaniciAdi={k!.ad_soyad}
     />
   );

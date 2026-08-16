@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getDb, logla, sayacArtirTx, trBugun, ensureEkTablolar } from "@/lib/db";
-import { korumali, okuma } from "@/lib/api";
+import { korumali, okuma, kullaniciHatasi } from "@/lib/api";
+import { elektronikImza } from "@/lib/eimza";
 import { kodSapma } from "@/lib/kod";
-import { govde, metin, metinOpsiyonel, secim, tarihOpsiyonel } from "@/lib/dogrula";
+import { govde, metin, metinOpsiyonel, secim, tarih, tarihOpsiyonel } from "@/lib/dogrula";
 
 const KAYNAK_TIPLERI = ["HAMMADDE", "SERI", "DIGER"] as const;
 
@@ -81,14 +82,29 @@ export const POST = korumali({ ekran: "sapma", eylem: "sapma_ac" }, async (req, 
   return NextResponse.json({ tamam: true, kod }, { status: 201 });
 });
 
-/** Kök neden ve CAPA girilerek sapma kapatılır. */
+/**
+ * Sapma; ilk aksiyon, risk, kök neden, CAPA ve etkinlik kanıtı tamamlandıktan
+ * sonra elektronik imzayla kapatılır. Yalnızca plan yazmak CAPA'nın
+ * uygulandığını ve işe yaradığını göstermez.
+ */
 export const PATCH = korumali({ ekran: "sapma", eylem: "sapma_kapat" }, async (req, k) => {
   await ensureEkTablolar();
   const b = await govde(req);
 
   const kod = metin(b.kod, "Sapma kodu", 40);
+  const ilk_aksiyon = metin(b.ilk_aksiyon, "İlk düzeltme / kontrol altına alma", 2000);
+  const risk_degerlendirme = metin(b.risk_degerlendirme, "Risk değerlendirmesi", 2000);
   const kok_neden = metin(b.kok_neden, "Kök neden", 2000);
   const capa = metin(b.capa, "Düzeltici / önleyici faaliyet (CAPA)", 2000);
+  const capa_sorumlu = metin(b.capa_sorumlu, "CAPA sorumlusu", 120);
+  const capa_termin = tarih(b.capa_termin, "CAPA termin tarihi");
+  const etkinlik_kriteri = metin(b.etkinlik_kriteri, "Etkinlik kriteri", 1000);
+  const etkinlik_tarihi = tarih(b.etkinlik_tarihi, "Etkinlik kontrol tarihi");
+  const etkinlik_sonucu = metin(b.etkinlik_sonucu, "Etkinlik kontrol sonucu", 2000);
+
+  if (etkinlik_tarihi > trBugun()) {
+    kullaniciHatasi("Etkinlik kontrol tarihi gelecekte olamaz.");
+  }
 
   const db = await getDb();
   const mevcut = await db.prepare("SELECT durum, kaynak_kod FROM sapmalar WHERE kod = ?").get(kod);
@@ -97,16 +113,43 @@ export const PATCH = korumali({ ekran: "sapma", eylem: "sapma_kapat" }, async (r
     return NextResponse.json({ hata: "Bu sapma zaten kapatılmış." }, { status: 409 });
   }
 
-  // KÖK NEDEN VE CAPA ZORUNLU. Bir sapmayı boş gerekçeyle kapatmak, seri
-  // serbest bırakma kontrolünü aşmanın kolay yolu olurdu.
-  await db
+  await elektronikImza({
+    k,
+    sifre: b.sifre,
+    eylem: "sapma_kapat",
+    kayit: kod,
+    anlam: "Sapma ve CAPA etkinlik değerlendirmesi kapatma onayı",
+  });
+
+  const kapanis = new Date().toISOString().slice(0, 19).replace("T", " ");
+  const sonuc = await db
     .prepare(
       `UPDATE sapmalar
-          SET kok_neden = ?, capa = ?, durum = 'KAPALI', kapatan_id = ?, kapanis_tarihi = ?
+          SET ilk_aksiyon = ?, risk_degerlendirme = ?, kok_neden = ?, capa = ?,
+              capa_sorumlu = ?, capa_termin = ?, etkinlik_kriteri = ?,
+              etkinlik_tarihi = ?, etkinlik_sonucu = ?, etkinlik_dogrulayan_id = ?,
+              durum = 'KAPALI', kapatan_id = ?, kapanis_tarihi = ?
         WHERE kod = ? AND durum = 'ACIK'`
     )
-    .run(kok_neden, capa, k.id, trBugun(), kod);
+    .run(
+      ilk_aksiyon, risk_degerlendirme, kok_neden, capa,
+      capa_sorumlu, capa_termin, etkinlik_kriteri,
+      etkinlik_tarihi, etkinlik_sonucu, k.id,
+      k.id, kapanis, kod
+    );
 
-  await logla(k.id, "Sapma kapatıldı", kod, kok_neden.slice(0, 120));
+  if (sonuc.changes === 0) {
+    return NextResponse.json(
+      { hata: "Sapma başka bir işlemde kapatılmış. Listeyi yenileyip tekrar kontrol edin." },
+      { status: 409 }
+    );
+  }
+
+  await logla(
+    k.id,
+    "Sapma kapatıldı — CAPA etkinliği doğrulandı",
+    kod,
+    `${capa_sorumlu} · etkinlik ${etkinlik_tarihi} · ${etkinlik_sonucu.slice(0, 80)}`
+  );
   return NextResponse.json({ tamam: true });
 });

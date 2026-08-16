@@ -15,10 +15,10 @@ import {
  FotoDugmesi, FotoPaneli } from "./FotoPaneli";
 
 export function SapmaEkrani({
-  kayitlar, lotlar, seriler, acabilir, kapatabilir,
+  kayitlar, lotlar, seriler, acabilir, kapatabilir, disaAktarabilir,
 }: {
   kayitlar: any[]; lotlar: string[]; seriler: string[];
-  acabilir: boolean; kapatabilir: boolean;
+  acabilir: boolean; kapatabilir: boolean; disaAktarabilir: boolean;
 }) {
   const router = useRouter();
   const bildirim = useBildirim();
@@ -34,9 +34,23 @@ export function SapmaEkrani({
 
   const [fotoKod, setFotoKod] = useState<{ kod: string; konu: string } | null>(null);
   const [kapatilan, setKapatilan] = useState<any>(null);
+  const [ilkAksiyon, setIlkAksiyon] = useState("");
+  const [riskDegerlendirme, setRiskDegerlendirme] = useState("");
   const [kokNeden, setKokNeden] = useState("");
   const [capa, setCapa] = useState("");
+  const [capaSorumlu, setCapaSorumlu] = useState("");
+  const [capaTermin, setCapaTermin] = useState("");
+  const [etkinlikKriteri, setEtkinlikKriteri] = useState("");
+  const [etkinlikTarihi, setEtkinlikTarihi] = useState("");
+  const [etkinlikSonucu, setEtkinlikSonucu] = useState("");
+  const [sifre, setSifre] = useState("");
   const [kapatBekle, setKapatBekle] = useState(false);
+
+  function kapanisFormunuTemizle() {
+    setIlkAksiyon(""); setRiskDegerlendirme(""); setKokNeden(""); setCapa("");
+    setCapaSorumlu(""); setCapaTermin(""); setEtkinlikKriteri("");
+    setEtkinlikTarihi(""); setEtkinlikSonucu(""); setSifre("");
+  }
 
   const acik = kayitlar.filter((s) => s.durum === "ACIK");
   const gecikmis = acik.filter((s) => s.termin && s.termin < bugun());
@@ -69,10 +83,22 @@ export function SapmaEkrani({
     try {
       await cagir("/api/sapma", {
         yontem: "PATCH",
-        govde: { kod: kapatilan.kod, kok_neden: kokNeden, capa },
+        govde: {
+          kod: kapatilan.kod,
+          ilk_aksiyon: ilkAksiyon,
+          risk_degerlendirme: riskDegerlendirme,
+          kok_neden: kokNeden,
+          capa,
+          capa_sorumlu: capaSorumlu,
+          capa_termin: capaTermin,
+          etkinlik_kriteri: etkinlikKriteri,
+          etkinlik_tarihi: etkinlikTarihi,
+          etkinlik_sonucu: etkinlikSonucu,
+          sifre,
+        },
       });
       bildirim.basari(`${kapatilan.kod} kapatıldı.`);
-      setKapatilan(null); setKokNeden(""); setCapa("");
+      setKapatilan(null); kapanisFormunuTemizle();
       router.refresh();
     } catch (e) {
       bildirim.hata((e as Error).message);
@@ -162,29 +188,57 @@ export function SapmaEkrani({
         <Kart baslik={`${kapatilan.kod} — Kapat`} aciklama={kapatilan.konu}>
           <form onSubmit={kapat}>
             <Uyari cesit="uyari">
-              Kök neden ve CAPA <b>zorunlu</b>. Boş gerekçeyle kapatmak, serbest bırakma
-              kontrolünü aşmanın kolay yolu olurdu.
+              Kapatma, yalnız CAPA planı yazılarak yapılamaz. İlk kontrol altına alma,
+              risk, uygulanan faaliyet ve <b>etkinlik kanıtı</b> birlikte kaydedilir;
+              işlem elektronik imzayla onaylanır.
             </Uyari>
-            <div className="grid gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Alan etiket="İlk düzeltme / kontrol altına alma *" ipucu="Ürün, proses veya alan ilk anda nasıl güvenceye alındı?">
+                <Metinlik rows={3} required value={ilkAksiyon} onChange={(e) => setIlkAksiyon(e.target.value)} />
+              </Alan>
+              <Alan etiket="Risk değerlendirmesi *" ipucu="Ürün kalitesi, hasta güvenliği ve piyasadaki ürün etkisi.">
+                <Metinlik rows={3} required value={riskDegerlendirme} onChange={(e) => setRiskDegerlendirme(e.target.value)} />
+              </Alan>
               <Alan etiket="Kök Neden *" ipucu="Neden oldu? Belirti değil, sebep.">
                 <Metinlik rows={3} required value={kokNeden} onChange={(e) => setKokNeden(e.target.value)} />
               </Alan>
               <Alan etiket="Düzeltici / Önleyici Faaliyet (CAPA) *" ipucu="Tekrarını ne engelleyecek?">
                 <Metinlik rows={3} required value={capa} onChange={(e) => setCapa(e.target.value)} />
               </Alan>
+              <Alan etiket="CAPA sorumlusu *">
+                <Girdi required value={capaSorumlu} onChange={(e) => setCapaSorumlu(e.target.value)} />
+              </Alan>
+              <Alan etiket="CAPA termin tarihi *">
+                <Girdi type="date" required value={capaTermin} onChange={(e) => setCapaTermin(e.target.value)} />
+              </Alan>
+              <Alan etiket="Etkinlik kriteri *" ipucu="CAPA'nın işe yaradığını hangi ölçülebilir koşul gösterecek?">
+                <Metinlik rows={3} required value={etkinlikKriteri} onChange={(e) => setEtkinlikKriteri(e.target.value)} />
+              </Alan>
+              <Alan etiket="Etkinlik kontrol sonucu *" ipucu="İncelenen kayıt/ölçüm ve ulaşılan sonuç.">
+                <Metinlik rows={3} required value={etkinlikSonucu} onChange={(e) => setEtkinlikSonucu(e.target.value)} />
+              </Alan>
+              <Alan etiket="Etkinlik kontrol tarihi *">
+                <Girdi type="date" max={bugun()} required value={etkinlikTarihi} onChange={(e) => setEtkinlikTarihi(e.target.value)} />
+              </Alan>
+              <Alan etiket="Elektronik imza — şifreniz *" ipucu="Kapatma ve etkinlik değerlendirmesi kimliğinize bağlanır.">
+                <Girdi type="password" autoComplete="current-password" required value={sifre} onChange={(e) => setSifre(e.target.value)} />
+              </Alan>
             </div>
             <div className="mt-3 flex justify-end gap-2">
-              <Dugme type="button" cesit="ikincil" onClick={() => setKapatilan(null)}>Vazgeç</Dugme>
+              <Dugme type="button" cesit="ikincil" onClick={() => { setKapatilan(null); kapanisFormunuTemizle(); }}>Vazgeç</Dugme>
               <Dugme type="submit" bekliyor={kapatBekle}
-                disabled={kokNeden.trim().length < 10 || capa.trim().length < 10}>
-                Sapmayı Kapat
+                disabled={[
+                  ilkAksiyon, riskDegerlendirme, kokNeden, capa, capaSorumlu,
+                  etkinlikKriteri, etkinlikSonucu,
+                ].some((x) => x.trim().length < 3) || !capaTermin || !etkinlikTarihi || !sifre}>
+                Elektronik İmzayla Kapat
               </Dugme>
             </div>
           </form>
         </Kart>
       )}
 
-      <Kart baslik={`Sapma Kayıtları (${kayitlar.length})`} sag={<DisaAktar tip="sapma" />}>
+      <Kart baslik={`Sapma Kayıtları (${kayitlar.length})`} sag={disaAktarabilir ? <DisaAktar tip="sapma" /> : null}>
         <Tablo basliklar={["Kod", "Kaynak", "Konu", "Açan", "Termin", "Durum", ""]}>
           {kayitlar.length === 0 ? (
             <Bos sutun={7}>Sapma kaydı yok.</Bos>
@@ -203,6 +257,10 @@ export function SapmaEkrani({
                     {s.durum === "KAPALI" && s.kok_neden && (
                       <span className="mt-1 block text-xs text-green-700 dark:text-green-400">
                         <b>Kök neden:</b> {s.kok_neden} · <b>CAPA:</b> {s.capa}
+                        {s.etkinlik_sonucu && <>
+                          {" "}· <b>Etkinlik:</b> {s.etkinlik_sonucu} ({trTarih(s.etkinlik_tarihi)})
+                          {s.etkinlik_dogrulayan_ad && <> · <b>Doğrulayan:</b> {s.etkinlik_dogrulayan_ad}</>}
+                        </>}
                       </span>
                     )}
                   </Hucre>
@@ -227,7 +285,7 @@ export function SapmaEkrani({
                   <Hucre>
                     <FotoDugmesi onClick={() => setFotoKod({ kod: s.kod, konu: s.konu })} />{" "}
                     {kapatabilir && s.durum === "ACIK" && (
-                      <button type="button" onClick={() => { setKapatilan(s); setKokNeden(""); setCapa(""); }}
+                      <button type="button" onClick={() => { setKapatilan(s); kapanisFormunuTemizle(); }}
                         className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">
                         Kapat
                       </button>
