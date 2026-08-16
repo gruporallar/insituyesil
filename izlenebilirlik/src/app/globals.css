@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/*
+ * `dark:` varyantı SINIFA bağlandı (varsayılan `prefers-color-scheme` yerine).
+ * Sebebi saha kullanımı: üretim alanında gündüz açık tema, depo ve gece
+ * vardiyasında koyu tema tercih ediliyor ve bunun için telefonun genel
+ * ayarını değiştirmek gerekmemeli.
+ *
+ * `.dark` sınıfını <html> üzerine layout.tsx'teki engelleyici betik koyuyor.
+ * "Sistem" seçiliyken betik yine `prefers-color-scheme`e bakıyor.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * SAYFA ZEMİNİ BURADAN GELİYOR — layout.tsx'teki `bg-*` sınıfından değil.
+ * Tailwind v4 yardımcı sınıfları bir cascade layer içinde; buradaki katmansız
+ * `body { background: … }` özgüllüğe bakmadan onları eziyor.
+ */
+:root {
+  --zemin: #f1f5f9;
+  --metin: #0f172a;
+}
+
+.dark {
+  --zemin: #020617;
+  --metin: #f1f5f9;
+}
+
+body {
+  background: var(--zemin);
+  color: var(--metin);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * DOKUNMATİK HEDEF EN AZ 44px. Depo ve üretim personeli eldivenle çalışıyor;
+ * varsayılan buton yüksekliği sahada ıskalanıyor.
+ *
+ * Form denetimleri de dâhil: tarih alanları 39–42px kalıyordu ve tarih
+ * seçicisini eldivenle açmak ıskalanan bir dokunuş demek.
+ *
+ * DÜZ BAĞLANTILAR (`a[href]`) BU LİSTEDE YOK ve olmamalı: satır içi bir
+ * bağlantı `inline` olduğu için `min-height` zaten hiçbir şey yapmaz, ama
+ * `display` değiştirmek paragraf akışını bozar. Tablo içindeki eylem
+ * bağlantıları için ayrı `.dokunma-hedefi` sınıfı var — bkz. `TabloBaglanti`.
+ */
+@media (pointer: coarse) {
+  button,
+  a[role="button"],
+  input[type="submit"],
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  /*
+   * Tablo ve kart içindeki eylem bağlantıları. Ölçüm sonucu 16–20 px
+   * çıkıyordu; iki bağlantı alt alta olduğunda (Seri Dosyası / İzle) yanlış
+   * olana basmak neredeyse kaçınılmazdı.
+   */
+  /*
+   * `display` BU SINIFTA YOK — kasıtlı ve bir hatanın sonucu.
+   *
+   * Sınıf eskiden `display: inline-flex` dayatıyordu. Tailwind v4 yardımcı
+   * sınıfları KATMANLI (`@layer utilities`), bu blok katmansız; CSS'te
+   * katmansız kural katmanlıyı ÖZGÜLLÜKTEN BAĞIMSIZ yener. Yani `flex`
+   * yazılmış bir bağlantı dokunmatik cihazda inline-flex'e dönüşüyor,
+   * içeriğine göre büyüyüp kabını taşırıyordu. `:where()` ile özgüllüğü
+   * sıfırlamak da çözmedi — sorun özgüllük değil katman.
+   *
+   * Panodaki "yarım kalan / kesik" görünüm buydu ve yalnızca dokunmatikte
+   * ortaya çıktığı için masaüstü ölçümlerinde görünmüyordu.
+   *
+   * Artık sınıf yalnızca dokunma alanını büyütüyor. Satır içi bağlantılarda
+   * `min-height` tek başına iş görmediği için o kullanımlar sınıfın yanına
+   * `inline-flex` yazıyor.
+   */
+  .dokunma-hedefi {
+    align-items: center;
+    min-height: 44px;
+    padding-block: 0.25rem;
+  }
+}
+
+/*
+ * iOS'ta 16px altındaki yazı boyutu, alana odaklanınca sayfayı otomatik
+ * yakınlaştırıyor ve kullanıcı her girişten sonra elle uzaklaştırmak zorunda
+ * kalıyor. Form alanlarında taban boyut 16px.
+ */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* Sayı alanlarındaki artırma okları sahada yanlışlıkla tıklanıyor. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Karekod etiketleri yazdırılırken sayfa kırılmasın. */
+@media print {
+  .yazdirma-gizle {
+    display: none !important;
+  }
+  .etiket {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  /* Kâğıt form baskısı: kabuk (menü, başlık) baskıya girmez, form sayfayı
+     kaplar. Kenar boşluğu yazıcıya bırakılmıyor — GMP formunda alan
+     kayması, sütun taşması demek. */
+  .baski {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    background: #fff;
+    color: #000;
+  }
+  .baski table {
+    break-inside: auto;
+  }
+  .baski tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .baski thead {
+    display: table-header-group;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}

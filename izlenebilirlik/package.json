@@ -1,0 +1,36 @@
+{
+  "name": "insitu-izlenebilirlik",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test:saf",
+    "test:saf": "node --experimental-strip-types test/birim/karekod.mjs && node --experimental-strip-types test/birim/kabul.mjs && node --experimental-strip-types test/birim/kod.mjs && node --experimental-strip-types test/birim/zincir.mjs && node --experimental-strip-types test/birim/proses.mjs && node --experimental-strip-types test/birim/filtre.mjs && node --experimental-strip-types test/birim/hizli.mjs && node --experimental-strip-types test/birim/ek.mjs && node --experimental-strip-types test/birim/etiket-tur.mjs && node --experimental-strip-types test/birim/yetki.mjs && node --experimental-strip-types test/birim/denetim.mjs && node --experimental-strip-types test/birim/logzinciri.mjs && node --experimental-strip-types test/birim/analiz.mjs && node --experimental-strip-types test/birim/gorev.mjs",
+    "dogrula": "npm run lint && npm run typecheck && npm run test:saf"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.4",
+    "bcryptjs": "^3.0.3",
+    "jsqr": "^1.4.0",
+    "lucide-react": "^1.31.0",
+    "next": "^16.3.1",
+    "qrcode-generator": "^2.0.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^16.3.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  dogrula:
+    name: Kalite kapısı
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      # lint + typecheck + saf testler. Derlemeden ÖNCE çalışıyor: bir tip
+      # hatası ya da kırılmış kabul kriteri, dört dakikalık derlemeyi beklemeden
+      # görülmeli.
+      - name: dogrula (lint + typecheck + testler)
+        run: npm run dogrula
+
+      # Derleme ayrı adım: yukarıdaki kapı geçse bile Next.js derlemesi
+      # (sunucu/istemci sınırı ihlalleri gibi) ancak burada patlıyor.
+      - name: build
+        run: npm run build

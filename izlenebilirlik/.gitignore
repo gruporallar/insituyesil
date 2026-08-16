@@ -1,0 +1,44 @@
+# bağımlılıklar
+/node_modules
+/.pnp
+.pnp.*
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# üretim
+/build
+
+# yerel veritabanı — ASLA depoya girmez, hasta ve çiftçi verisi içerir
+/data/*.db
+/data/*.db-journal
+/data/*.db-wal
+/data/*.db-shm
+
+# ortam değişkenleri — sırlar koda gömülmez
+.env
+.env*.local
+.env.production
+
+# Vercel
+.vercel
+
+# hata ayıklama
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# işletim sistemi
+.DS_Store
+Thumbs.db
+__MACOSX/
+._*
+
+.vercel
+.env*
+
+# Kurulum araçları — uygulamanın parçası değil, depoya girmez.
+araclar/
