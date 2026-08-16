@@ -1,6 +1,8 @@
 ﻿node_modules/
 .next/
-.env*.local
+.env*
+!.env.example
+vercel.txt
 dist/
 build/
 .DS_Store
